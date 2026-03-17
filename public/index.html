@@ -868,6 +868,9 @@
       document.getElementById('yahooLink').href = data.yahooUrl;
       document.getElementById('resultsArea').classList.remove('hidden');
 
+      // 全経路の路線をまとめて改定情報を表示
+      showRevisionInfoForAll(data.routes);
+
       // 1件なら自動選択
       if (data.routes.length === 1) {
         selectRoute(data.routes[0], container.querySelector('.route-card'));
@@ -883,9 +886,24 @@
       showRevisionInfo(route);
     }
 
-    // 経路の路線名から関連する改定情報を特定して表示
+    // 全経路の路線から改定情報を表示（検索直後に呼ばれる）
+    function showRevisionInfoForAll(routes) {
+      const allLines = [];
+      routes.forEach(r => {
+        (r.lines || []).forEach(l => {
+          if (!allLines.includes(l)) allLines.push(l);
+        });
+      });
+      showRevisionInfoFromLines(allLines);
+    }
+
+    // 単一経路選択時
     function showRevisionInfo(route) {
-      const lines = route.lines || [];
+      showRevisionInfoFromLines(route.lines || []);
+    }
+
+    // 路線名リストから関連する改定情報を特定して表示
+    function showRevisionInfoFromLines(lines) {
       const matchedCompanies = new Set();
 
       lines.forEach(line => {
