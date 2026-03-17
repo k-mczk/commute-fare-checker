@@ -782,7 +782,12 @@
         return;
       }
 
-      const to = document.getElementById('toStation').value;
+      const to = document.getElementById('toStation').value.trim();
+      if (!to) {
+        document.getElementById('toStation').focus();
+        return;
+      }
+
       searchBtn.disabled = true;
       document.getElementById('loadingArea').classList.remove('hidden');
       document.getElementById('errorArea').classList.add('hidden');

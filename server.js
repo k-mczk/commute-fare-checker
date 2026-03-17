@@ -10,9 +10,9 @@ app.use(express.static(path.join(__dirname, "public")));
 // Yahoo乗換案内から定期代を取得（__NEXT_DATA__ JSONをパース）
 app.get("/api/search", async (req, res) => {
   const from = req.query.from;
-  const to = req.query.to || "茅場町";
-  if (!from) {
-    return res.status(400).json({ error: "fromパラメータが必要です" });
+  const to = req.query.to;
+  if (!from || !to) {
+    return res.status(400).json({ error: "from・toパラメータが必要です" });
   }
 
   try {
