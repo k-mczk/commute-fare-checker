@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>通勤定期代 変更チェッカー（2026年運賃改定）</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: #f5f7fa;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    h1 {
+      font-size: 1.4rem;
+      text-align: center;
+      margin-bottom: 4px;
+      color: #1a1a2e;
+    }
+    .subtitle {
+      text-align: center;
+      color: #666;
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+    }
+
+    /* 検索セクション */
+    .search-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .search-section h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: #1a1a2e;
+    }
+    .form-row {
+      display: flex;
+      gap: 12px;
+      align-items: end;
+      margin-bottom: 12px;
+    }
+    .form-group {
+      flex: 1;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 10px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #4a90d9;
+    }
+    .form-group input[readonly] {
+      background: #f0f4f8;
+      color: #666;
+    }
+    .btn {
+      padding: 10px 24px;
+      background: #4a90d9;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .btn:hover { background: #3a7bc8; }
+    .btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .btn-sm {
+      padding: 6px 14px;
+      font-size: 0.85rem;
+    }
+
+    /* 現在の定期代入力 */
+    .current-fare-section {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .current-fare-section h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: #1a1a2e;
+    }
+    .fare-input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fare-input-row input {
+      width: 160px;
+      padding: 10px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      text-align: right;
+    }
+    .fare-input-row input:focus {
+      outline: none;
+      border-color: #4a90d9;
+    }
+    .fare-input-row span {
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    /* 検索結果 */
+    .results {
+      margin-bottom: 20px;
+    }
+    .route-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 12px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .route-card:hover {
+      border-color: #4a90d9;
+      box-shadow: 0 4px 12px rgba(74,144,217,0.15);
+    }
+    .route-card.selected {
+      border-color: #4a90d9;
+      background: #f0f7ff;
+    }
+    .route-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .route-number {
+      font-size: 0.8rem;
+      color: #fff;
+      background: #4a90d9;
+      padding: 2px 10px;
+      border-radius: 12px;
+    }
+    .route-fare {
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #1a1a2e;
+    }
+    .route-detail {
+      font-size: 0.85rem;
+      color: #666;
+    }
+    .route-stations {
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    /* 比較結果 */
+    .comparison {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .comparison h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: #1a1a2e;
+    }
+    .comparison-grid {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 12px;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .fare-box {
+      padding: 16px;
+      border-radius: 8px;
+    }
+    .fare-box.before {
+      background: #f0f4f8;
+    }
+    .fare-box.after {
+      background: #e8f5e9;
+    }
+    .fare-box .label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .fare-box .amount {
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .arrow {
+      font-size: 1.5rem;
+      color: #999;
+    }
+    .diff {
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      font-weight: bold;
+    }
+    .diff.up {
+      background: #fff3e0;
+      color: #e65100;
+    }
+    .diff.down {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+    .diff.same {
+      background: #f5f5f5;
+      color: #666;
+    }
+
+    /* アンケート回答 */
+    .survey-answer {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .survey-answer h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: #1a1a2e;
+    }
+    .answer-item {
+      padding: 12px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      margin-bottom: 8px;
+    }
+    .answer-item .q {
+      font-size: 0.8rem;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .answer-item .a {
+      font-size: 0.95rem;
+      font-weight: 500;
+    }
+    .copy-all-btn {
+      width: 100%;
+      margin-top: 12px;
+    }
+
+    /* 運賃改定根拠 */
+    .revision-info {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 20px;
+    }
+    .revision-info h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: #1a1a2e;
+    }
+    .revision-item {
+      padding: 12px;
+      border-left: 3px solid #4a90d9;
+      background: #f8f9fa;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 8px;
+    }
+    .revision-item .company {
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .revision-item .date {
+      font-size: 0.8rem;
+      color: #e65100;
+      margin-bottom: 4px;
+    }
+    .revision-item .detail {
+      font-size: 0.85rem;
+      color: #555;
+    }
+    .revision-item a {
+      color: #4a90d9;
+      text-decoration: none;
+      font-size: 0.8rem;
+    }
+    .revision-item a:hover { text-decoration: underline; }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .loading::after {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #ccc;
+      border-top-color: #4a90d9;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error {
+      background: #fff3f3;
+      color: #c62828;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 8px;
+    }
+    .hidden { display: none; }
+
+    .yahoo-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: #4a90d9;
+      text-decoration: none;
+    }
+    .yahoo-link:hover { text-decoration: underline; }
+
+    /* 通勤手段 */
+    .transport-select {
+      margin-bottom: 12px;
+    }
+    .transport-select select {
+      padding: 8px 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      background: #fff;
+    }
+
+    @media (max-width: 600px) {
+      .form-row { flex-direction: column; }
+      .comparison-grid { grid-template-columns: 1fr; }
+      .arrow { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>通勤定期代 変更チェッカー</h1>
+    <p class="subtitle">2026年運賃改定対応 - 株式会社エム・エー・ディー</p>
+
+    <!-- 検索 -->
+    <div class="search-section">
+      <h2>1. 最寄り駅を入力</h2>
+      <div class="form-row">
+        <div class="form-group">
+          <label>自宅の最寄り駅</label>
+          <input type="text" id="fromStation" placeholder="例: 武蔵小杉" autofocus>
+        </div>
+        <div class="form-group">
+          <label>会社の最寄り駅</label>
+          <input type="text" id="toStation" value="茅場町" placeholder="例: 茅場町">
+        </div>
+        <button class="btn" id="searchBtn" onclick="searchFare()" style="align-self:end;">検索</button>
+      </div>
+      <div class="transport-select">
+        <label style="font-size:0.8rem;color:#666;">通勤手段：</label>
+        <select id="transportType">
+          <option value="電車のみ">電車のみ</option>
+          <option value="バスのみ">バスのみ</option>
+          <option value="電車とバスの併用">電車とバスの併用</option>
+          <option value="other">その他</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 現在の定期代 -->
+    <div class="current-fare-section">
+      <h2>2. 現在の定期代（1ヶ月）を入力</h2>
+      <div class="fare-input-row">
+        <span>変更前：</span>
+        <input type="text" id="currentFare" placeholder="12,540" inputmode="numeric">
+        <span>円</span>
+      </div>
+      <p class="note">給与明細の通勤手当 or 現在の定期券の金額を入力してください</p>
+    </div>
+
+    <!-- 検索結果 -->
+    <div id="loadingArea" class="hidden">
+      <div class="loading">定期代を検索中</div>
+    </div>
+    <div id="errorArea" class="hidden"></div>
+    <div id="resultsArea" class="hidden results">
+      <h2 style="font-size:1rem;margin-bottom:12px;color:#1a1a2e;">3. 経路を選択（改定後の定期代）</h2>
+      <div id="routeCards"></div>
+      <a id="yahooLink" class="yahoo-link" href="#" target="_blank" rel="noopener">Yahoo!乗換案内で詳細を確認 →</a>
+    </div>
+
+    <!-- 比較結果 -->
+    <div id="comparisonArea" class="hidden comparison">
+      <h2>比較結果</h2>
+      <div class="comparison-grid">
+        <div class="fare-box before">
+          <div class="label">変更前（現在）</div>
+          <div class="amount" id="beforeAmount">-</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="fare-box after">
+          <div class="label">変更後（改定後）</div>
+          <div class="amount" id="afterAmount">-</div>
+        </div>
+      </div>
+      <div class="diff" id="diffArea"></div>
+    </div>
+
+    <!-- アンケート回答 -->
+    <div id="surveyArea" class="hidden survey-answer">
+      <h2>アンケート回答（コピー用）</h2>
+      <div id="surveyAnswers"></div>
+      <button class="btn copy-all-btn" onclick="copyAnswers()">回答をクリップボードにコピー</button>
+      <a id="formLink" class="yahoo-link" href="https://docs.google.com/forms/d/e/1FAIpQLScTFt9uHL2JhqxwXqPdYOZ9FHXBvbj9fQChpozFe1MgE5Ij9A/viewform" target="_blank" rel="noopener">Google フォームを開く →</a>
+    </div>
+
+    <!-- 運賃改定根拠（検索後に動的表示） -->
+    <div id="revisionArea" class="hidden revision-info">
+      <h2>あなたの経路に関連する運賃改定情報</h2>
+      <div id="revisionItems"></div>
+      <p class="note" style="margin-top:16px;">
+        改定前に購入した定期券は旧運賃が適用されます。改定後に購入する定期券から新運賃となります。
+      </p>
+    </div>
+  </div>
+
+  <script>
+    const fromInput = document.getElementById('fromStation');
+    const searchBtn = document.getElementById('searchBtn');
+    let selectedRoute = null;
+    let searchResults = null;
+
+    // JR東日本の路線名キーワード（これに一致すればJR東日本）
+    const jrEastLines = [
+      '山手線', '京浜東北', '中央線', '総武線', '埼京線', '横須賀線',
+      '東海道本線(上野東京ライン)', '上野東京ライン', '湘南新宿ライン',
+      '宇都宮線', '高崎線', '常磐線', '武蔵野線', '南武線', '横浜線',
+      '青梅線', '五日市線', '八高線', '相模線', '京葉線', '内房線',
+      '外房線', '成田線', '総武本線', '鹿島線', '東金線', '久留里線',
+      '中央本線', '篠ノ井線', '信越本線', '上越線', '両毛線',
+      '水戸線', '日光線', '烏山線', '吾妻線', '仙石線', '仙山線',
+      '東北本線', '奥羽本線', '羽越本線', '磐越西線', '磐越東線',
+    ];
+    // JR西日本の路線名キーワード
+    const jrWestLines = [
+      '京都線', '神戸線', '琵琶湖線', '大阪環状線', '阪和線',
+      '関西本線', '奈良線', '嵯峨野線', '学研都市線', '宝塚線',
+      'おおさか東線', '桜島線', '湖西線', '山陽本線', '赤穂線',
+      '伯備線', '山陰本線', '福知山線', '加古川線', '播但線',
+      '北陸本線', '小浜線', '舞鶴線',
+      '万葉まほろば線', '大和路線', '大和路快速', '奈良線',
+      '関西空港線', 'きのくに線',
+    ];
+    // JR東海の路線名キーワード
+    const jrCentralLines = [
+      '東海道新幹線', '東海道本線（JR東海）',
+      '中央本線（JR東海）', '関西本線（JR東海）',
+      '飯田線', '身延線', '御殿場線', '参宮線', '紀勢本線',
+      '武豊線', '高山本線', '太多線',
+    ];
+
+    // 路線名からJR会社を判定
+    function detectJrCompany(lineName) {
+      for (const kw of jrEastLines) {
+        if (lineName.includes(kw)) return 'jr_east';
+      }
+      for (const kw of jrWestLines) {
+        if (lineName.includes(kw)) return 'jr_west';
+      }
+      for (const kw of jrCentralLines) {
+        if (lineName.includes(kw)) return 'jr_central';
+      }
+      // 「東海道本線」単体は区間で判定困難→マッチなし
+      return null;
+    }
+
+    // 路線名→会社キーのマッピング（JR以外）
+    const lineToCompany = {
+      '東京メトロ': 'tokyo_metro',
+      '都営': 'toei',
+      '京王': 'keio',
+      '西武': 'seibu',
+      '東急': 'tokyu',
+      '小田急': 'odakyu',
+      '東武': 'tobu',
+      'つくばエクスプレス': 'tx',
+      '京急': 'keikyu',
+      '京成': 'keisei',
+      '相鉄': 'sotetsu',
+      'りんかい': 'rinkai',
+      'ゆりかもめ': 'yurikamome',
+      '大阪メトロ': 'osaka_metro',
+      'Osaka Metro': 'osaka_metro',
+      '阪急': 'hankyu',
+      '阪神': 'hanshin',
+      '南海': 'nankai',
+      '近鉄': 'kintetsu',
+      '京阪': 'keihan',
+      '奈良交通': 'nara_kotsu',
+      'ぐるっとバス': 'gurutto',
+    };
+
+    // 路線名から会社キーを特定する関数
+    function detectCompany(lineName) {
+      // JR系は専用ロジック
+      if (lineName.includes('ＪＲ') || lineName.includes('JR')) {
+        return detectJrCompany(lineName);
+      }
+      // その他は前方一致
+      for (const [keyword, companyKey] of Object.entries(lineToCompany)) {
+        if (lineName.includes(keyword)) return companyKey;
+      }
+      return null;
+    }
+
+    // 運賃改定データベース（会社キー → 改定情報配列）
+    const revisionDB = {
+      jr_east: {
+        company: 'JR東日本',
+        revisions: [{
+          date: '2026年3月14日',
+          detail: '電車特定区間・山手線内区間を廃止し「幹線」運賃に統合。東京近郊の多くの区間で運賃・定期代が値上がり。オフピーク定期券の利用可能範囲拡大。鉄道駅バリアフリー料金（10円/乗車）の廃止。',
+          impact: '定期代への影響大（特に電車特定区間内の利用者）',
+          links: [
+            { text: 'JR東日本 運賃改定の詳細 (PDF)', url: 'https://www.jreast.co.jp/press/2025/20251008_ho03.pdf' },
+            { text: 'JR東日本 運賃改定パンフレット (PDF)', url: 'https://www.jreast.co.jp/2026unchin-kaitei/assets/pdf/pamphlet.pdf' },
+            { text: 'JR東日本 運賃改定特設ページ', url: 'https://www.jreast.co.jp/en/2026unchin-kaitei/' },
+          ],
+        }],
+      },
+      tokyo_metro: {
+        company: '東京メトロ',
+        revisions: [
+          {
+            date: '2023年3月',
+            detail: '鉄道駅バリアフリー料金を導入（10円/乗車を加算）。ホームドア設置等のバリアフリー整備費用に充当。',
+            impact: '全区間で運賃10円増（2026年3月時点も継続中）',
+            links: [
+              { text: '東京メトロ バリアフリー料金制度のお知らせ', url: 'https://www.tokyometro.jp/news/2022/212636.html' },
+              { text: '東京メトロ バリアフリー料金の詳細 (PDF)', url: 'https://www.tokyometro.jp/safety/barrierfree/pdf/barrierfree_price_230207.pdf' },
+            ],
+          },
+          {
+            date: '2026年3月14日',
+            detail: '千代田線 綾瀬〜北千住 相互発着の特定運賃を改定。IC: 146円→150円。通勤定期（1ヶ月）: 4,230円→4,910円。その他区間は変更なし。',
+            impact: '綾瀬〜北千住利用者のみ影響あり',
+            links: [
+              { text: '東京メトロ 特定運賃変更のお知らせ (PDF)', url: 'https://www.tokyometro.jp/info/files/0314_fareschanges_ayase_kitasenju.pdf' },
+            ],
+          },
+        ],
+      },
+      toei: {
+        company: '都営地下鉄',
+        revisions: [{
+          date: '2023年3月',
+          detail: '鉄道駅バリアフリー料金を導入（10円/乗車を加算）。2026年3月時点で新たな改定予定なし。',
+          impact: '2026年3月の改定対象外',
+          links: [
+            { text: '鉄道駅バリアフリー料金制度について（国土交通省）', url: 'https://www.mlit.go.jp/tetudo/tetudo_tk6_000008.html' },
+          ],
+        }],
+      },
+      keio: {
+        company: '京王電鉄',
+        revisions: [{
+          date: '2023年10月1日',
+          detail: '約28年ぶりの運賃改定。改定率13.3%。初乗り（IC）: 126円→140円。通勤定期は普通運賃に連動して値上げ（割引率37.6%据置）。通学定期は据え置き。相模原線の加算運賃を廃止。',
+          impact: '2023年10月以降の定期代が改定済み。2026年3月の追加改定予定なし。',
+          links: [
+            { text: '京王電鉄 運賃改定のお知らせ (PDF)', url: 'https://www.keio.co.jp/news/update/announce/announce2023/2023unchinkaitei.pdf' },
+            { text: '京王電鉄 運賃改定プレスリリース (PDF)', url: 'https://www.keio.co.jp/news/update/news_release/news_release2023/nr20230623_unchin.pdf' },
+          ],
+        }],
+      },
+      seibu: {
+        company: '西武鉄道',
+        revisions: [{
+          date: '2026年3月14日',
+          detail: '普通運賃 改定率11.9%、通勤定期 改定率10.0%。通学定期は据え置き。鉄道駅バリアフリー料金の廃止。小児IC運賃を全区間一律50円に。初乗り（IC）: 157円→169円。',
+          impact: '定期代への影響大（通勤定期10%値上げ）',
+          links: [
+            { text: '西武鉄道 運賃改定のお知らせ', url: 'https://www.seiburailway.jp/unchinkaitei_202603/' },
+            { text: '西武鉄道 改定実施日のお知らせ', url: 'https://www.seiburailway.jp/newsroom/news/20251126_unchinkaiteibi/' },
+          ],
+        }],
+      },
+      tx: {
+        company: 'つくばエクスプレス',
+        revisions: [{
+          date: '2026年3月14日',
+          detail: '普通運賃 平均8.2%値上げ。通勤定期 20.2%値上げ（3・6ヶ月の割引率圧縮）。通学定期は15.3%値下げ。初乗り: 170円→180円。秋葉原〜つくば: 1,210円→1,280円。',
+          impact: '定期代への影響大（特に通勤定期の長期割引圧縮）',
+          links: [
+            { text: 'つくばエクスプレス 運賃改定のお知らせ', url: 'https://www.mir.co.jp/topics/2025/unchinkaitei_202603.html' },
+          ],
+        }],
+      },
+      tokyu: {
+        company: '東急電鉄',
+        revisions: [{
+          date: '2023年3月',
+          detail: '鉄道駅バリアフリー料金を導入（10円/乗車を加算）。2026年3月時点で新たな改定予定なし。',
+          impact: '2026年3月の改定対象外',
+          links: [
+            { text: '2023年3月 鉄道各社バリアフリー料金導入まとめ', url: 'https://www.tetsudo.com/event/41751/' },
+          ],
+        }],
+      },
+      odakyu: {
+        company: '小田急電鉄',
+        revisions: [{
+          date: '2023年3月',
+          detail: '鉄道駅バリアフリー料金を導入（全線一律10円値上げ）。ホームドア設置等に充当。2026年3月時点で新たな改定予定なし。',
+          impact: '2026年3月の改定対象外',
+          links: [
+            { text: '小田急電鉄 バリアフリー料金のお知らせ (PDF)', url: 'https://www.odakyu.jp/support/dq40940000000vud-att/bariunchin.pdf' },
+          ],
+        }],
+      },
+      tobu: {
+        company: '東武鉄道',
+        revisions: [{
+          date: '2023年3月',
+          detail: '鉄道駅バリアフリー料金を導入（10円/乗車を加算）。通勤定期は1ヶ月600円加算。2026年3月時点で新たな改定予定なし。',
+          impact: '2026年3月の改定対象外',
+          links: [
+            { text: '東武鉄道 バリアフリー料金のご案内 (PDF)', url: 'https://www.tobu.co.jp/cms-pdf/news/20230112100214Gv1kyy7BfpQaffCFrMA9lQ.pdf' },
+          ],
+        }],
+      },
+      keikyu: {
+        company: '京急電鉄',
+        revisions: [{
+          date: '2023年10月1日',
+          detail: '運賃改定を実施（初乗り140円→150円）。遠距離区間は値下げ。バリアフリー料金導入と合わせた運賃体系変更。2026年3月の追加改定予定なし。',
+          impact: '2023年10月以降の定期代が改定済み',
+          links: [
+            { text: '京急電鉄 運賃改定のお知らせ', url: 'https://www.keikyu.co.jp/report/2023/101_4.html' },
+            { text: '京急電鉄 運賃改定認可プレスリリース (PDF)', url: 'https://www.keikyu.co.jp/assets/pdf/20230421HP_23009TE.pdf' },
+          ],
+        }],
+      },
+      keisei: {
+        company: '京成電鉄',
+        revisions: [{
+          date: '2024年3月16日',
+          detail: '鉄道駅バリアフリー料金を導入（10円/乗車を加算）。成田スカイアクセスは対象外。2026年3月時点で新たな改定予定なし。',
+          impact: '2024年3月以降の定期代が改定済み',
+          links: [
+            { text: '京成電鉄 バリアフリー料金収受開始のお知らせ', url: 'https://www.keisei.co.jp/news/detail.php?CN=6210' },
+            { text: '京成電鉄 バリアフリー料金制度の詳細 (PDF)', url: 'https://www.keisei.co.jp/cms/files/keisei/MASTER/0110/mjRlVLL2.pdf' },
+          ],
+        }],
+      },
+      sotetsu: {
+        company: '相鉄',
+        revisions: [{
+          date: '2023年3月',
+          detail: '鉄道駅バリアフリー料金を導入（10円/乗車を加算）。通勤定期は1ヶ月600円加算。2026年3月時点で新たな改定予定なし。',
+          impact: '2026年3月の改定対象外',
+          links: [
+            { text: '相鉄 バリアフリー料金のご案内 (PDF)', url: 'https://cdn.sotetsu.co.jp/media/2023/train/safety/barrierfree/barrierfree-fare.pdf' },
+          ],
+        }],
+      },
+      jr_west: {
+        company: 'JR西日本',
+        revisions: [{
+          date: '2025年4月1日',
+          detail: '京阪神都市圏の運賃体系を見直し。大阪環状線内の区分を廃止し適用エリア拡大。鉄道駅バリアフリー料金を加算（改定率1.3%）。',
+          impact: '京阪神エリア利用者は2025年4月以降の定期代が改定済み',
+          links: [
+            { text: 'JR西日本 京阪神都市圏の運賃体系見直しについて', url: 'https://www.westjr.co.jp/press/article/2024/05/page_25166.html' },
+            { text: 'JR西日本 プレスリリース (PDF)', url: 'https://www.westjr.co.jp/press/article/items/240515_00_press_keihanshin_unchin.pdf' },
+          ],
+        }],
+      },
+      jr_central: {
+        company: 'JR東海',
+        revisions: [{
+          date: '直近の改定なし',
+          detail: '2026年3月時点で通勤定期代に影響する運賃改定の予定なし。',
+          impact: '改定対象外',
+          links: [
+            { text: 'JR東海 バリアフリー料金制度について', url: 'https://company.jr-central.co.jp/others/barrier-free-system/' },
+          ],
+        }],
+      },
+      kintetsu: {
+        company: '近鉄（近畿日本鉄道）',
+        revisions: [{
+          date: '2023年4月1日',
+          detail: '平均改定率17%の運賃改定を実施。初乗り20円値上げ（160円→180円）。通勤定期も改定。通学定期は大手私鉄最大の割引率を維持。車内防犯対策・バリアフリー整備等に充当。',
+          impact: '2023年4月以降の定期代が改定済み。2026年3月の追加改定予定なし。',
+          links: [
+            { text: '近鉄 運賃改定認可のお知らせ (PDF)', url: 'https://www.kintetsu.co.jp/all_news/news_info/HP_unchinninka.pdf' },
+            { text: '近鉄 運賃改定まとめ（鉄道コム）', url: 'https://www.tetsudo.com/event/41837/' },
+          ],
+        }],
+      },
+      nara_kotsu: {
+        company: '奈良交通バス',
+        revisions: [{
+          date: '2024年2月1日',
+          detail: '14年ぶりの運賃改定。均一運賃区間: 220円→250円。初乗り: 190円→220円。平均改定率14.26%。',
+          impact: '2024年2月以降のバス定期代が改定済み',
+          links: [
+            { text: '奈良交通 運賃改定のお知らせ', url: 'https://www.narakotsu.co.jp/news/route/1113/' },
+            { text: '奈良交通 運賃改定申請について', url: 'https://www.narakotsu.co.jp/news/general/3392/' },
+            { text: '奈良県 路線バス定期旅客運賃等の改定について', url: 'https://www.pref.nara.jp/item/247128.htm' },
+          ],
+        }],
+      },
+      gurutto: {
+        company: '奈良市「ぐるっとバス」',
+        revisions: [{
+          date: '2025年4月1日',
+          detail: '3路線を1路線（奈良公園ルート）に統合・再編。運賃を100円→250円に改定。土日祝のみ運行。一部路線は路線バスで代替。',
+          impact: '通勤利用の場合は路線バス（奈良交通）に移行の可能性あり',
+          links: [
+            { text: '奈良県 ぐるっとバスのルート・運賃変更について', url: 'https://www.pref.nara.jp/item/319867.htm' },
+            { text: '奈良交通 ぐるっとバス', url: 'https://www.narakotsu.co.jp/temporary/gurutto-bus/' },
+          ],
+        }],
+      },
+    };
+
+    // Enterキーで検索
+    fromInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') searchFare();
+    });
+
+    // 現在の定期代入力時に自動比較
+    document.getElementById('currentFare').addEventListener('input', updateComparison);
+
+    async function searchFare() {
+      const from = fromInput.value.trim();
+      if (!from) {
+        fromInput.focus();
+        return;
+      }
+
+      const to = document.getElementById('toStation').value;
+      searchBtn.disabled = true;
+      document.getElementById('loadingArea').classList.remove('hidden');
+      document.getElementById('errorArea').classList.add('hidden');
+      document.getElementById('resultsArea').classList.add('hidden');
+      document.getElementById('comparisonArea').classList.add('hidden');
+      document.getElementById('surveyArea').classList.add('hidden');
+      document.getElementById('revisionArea').classList.add('hidden');
+      selectedRoute = null;
+
+      try {
+        const res = await fetch(`/api/search?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
+        const data = await res.json();
+        searchResults = data;
+
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+
+        if (data.suggestions && data.suggestions.length > 0) {
+          showError(`「${from}」に一致する駅が見つかりませんでした。候補: ${data.suggestions.join('、')}`);
+          return;
+        }
+
+        if (data.routes.length === 0) {
+          showError(`「${from}」→「${to}」の定期代が見つかりませんでした。駅名を確認してください。`);
+          // Yahoo リンクは表示
+          if (data.yahooUrl) {
+            document.getElementById('yahooLink').href = data.yahooUrl;
+            document.getElementById('resultsArea').classList.remove('hidden');
+          }
+          return;
+        }
+
+        renderRoutes(data);
+      } catch (err) {
+        showError('検索に失敗しました: ' + err.message);
+      } finally {
+        searchBtn.disabled = false;
+        document.getElementById('loadingArea').classList.add('hidden');
+      }
+    }
+
+    function showError(msg) {
+      const area = document.getElementById('errorArea');
+      area.innerHTML = `<div class="error">${msg}</div>`;
+      area.classList.remove('hidden');
+    }
+
+    function renderRoutes(data) {
+      const container = document.getElementById('routeCards');
+      container.innerHTML = '';
+
+      data.routes.forEach((route, i) => {
+        const card = document.createElement('div');
+        card.className = 'route-card';
+        card.onclick = () => selectRoute(route, card);
+
+        const stationText = route.stations.length > 0
+          ? route.stations.join(' → ')
+          : '';
+        const lineText = route.lines.length > 0
+          ? route.lines.join(' / ')
+          : '';
+
+        card.innerHTML = `
+          <div class="route-header">
+            <span class="route-number">経路${route.index}</span>
+            <span class="route-fare">${route.month1}</span>
+          </div>
+          ${stationText ? `<div class="route-stations">${stationText}</div>` : ''}
+          ${lineText ? `<div class="route-detail">${lineText}</div>` : ''}
+          ${route.month3 ? `<div class="route-detail" style="margin-top:4px;">3ヶ月: ${route.month3}${route.month6 ? ` / 6ヶ月: ${route.month6}` : ''}</div>` : ''}
+        `;
+        container.appendChild(card);
+      });
+
+      document.getElementById('yahooLink').href = data.yahooUrl;
+      document.getElementById('resultsArea').classList.remove('hidden');
+
+      // 1件なら自動選択
+      if (data.routes.length === 1) {
+        selectRoute(data.routes[0], container.querySelector('.route-card'));
+      }
+    }
+
+    function selectRoute(route, cardEl) {
+      // 選択状態をトグル
+      document.querySelectorAll('.route-card').forEach(c => c.classList.remove('selected'));
+      cardEl.classList.add('selected');
+      selectedRoute = route;
+      updateComparison();
+      showRevisionInfo(route);
+    }
+
+    // 経路の路線名から関連する改定情報を特定して表示
+    function showRevisionInfo(route) {
+      const lines = route.lines || [];
+      const matchedCompanies = new Set();
+
+      lines.forEach(line => {
+        const key = detectCompany(line);
+        if (key) matchedCompanies.add(key);
+      });
+
+      const container = document.getElementById('revisionItems');
+      container.innerHTML = '';
+
+      if (matchedCompanies.size === 0) {
+        document.getElementById('revisionArea').classList.add('hidden');
+        return;
+      }
+
+      // 2026年改定ありの会社を先に、それ以外を後に
+      const sorted = [...matchedCompanies].sort((a, b) => {
+        const aHas2026 = revisionDB[a]?.revisions.some(r => r.date.includes('2026'));
+        const bHas2026 = revisionDB[b]?.revisions.some(r => r.date.includes('2026'));
+        if (aHas2026 && !bHas2026) return -1;
+        if (!aHas2026 && bHas2026) return 1;
+        return 0;
+      });
+
+      sorted.forEach(companyKey => {
+        const data = revisionDB[companyKey];
+        if (!data) return;
+
+        data.revisions.forEach(rev => {
+          const item = document.createElement('div');
+          item.className = 'revision-item';
+          const is2026 = rev.date.includes('2026');
+
+          item.innerHTML = `
+            <div class="company">${data.company}${is2026 ? ' <span style="color:#e65100;font-size:0.8rem;font-weight:normal;">★ 2026年改定</span>' : ''}</div>
+            <div class="date">${rev.date} 改定</div>
+            <div class="detail">${rev.detail}</div>
+            <div style="margin-top:6px;padding:6px 10px;background:${is2026 ? '#fff3e0' : '#f0f4f8'};border-radius:6px;font-size:0.85rem;">
+              <strong>定期代への影響:</strong> ${rev.impact}
+            </div>
+            ${rev.links.map(l => `<a href="${l.url}" target="_blank" rel="noopener">${l.text}</a><br>`).join('')}
+          `;
+          container.appendChild(item);
+        });
+      });
+
+      document.getElementById('revisionArea').classList.remove('hidden');
+    }
+
+    function parseFare(str) {
+      if (!str) return NaN;
+      return parseInt(str.replace(/[,円\s]/g, ''), 10);
+    }
+
+    function formatFare(num) {
+      return num.toLocaleString() + '円';
+    }
+
+    function updateComparison() {
+      if (!selectedRoute) return;
+
+      const currentInput = document.getElementById('currentFare').value;
+      const currentFare = parseFare(currentInput);
+      const newFare = parseFare(selectedRoute.month1);
+
+      if (isNaN(newFare)) return;
+
+      document.getElementById('afterAmount').textContent = formatFare(newFare);
+
+      if (!isNaN(currentFare) && currentFare > 0) {
+        document.getElementById('beforeAmount').textContent = formatFare(currentFare);
+        const diff = newFare - currentFare;
+        const diffArea = document.getElementById('diffArea');
+
+        if (diff > 0) {
+          diffArea.className = 'diff up';
+          diffArea.textContent = `+${formatFare(diff)}（値上げ）`;
+        } else if (diff < 0) {
+          diffArea.className = 'diff down';
+          diffArea.textContent = `${formatFare(diff)}（値下げ）`;
+        } else {
+          diffArea.className = 'diff same';
+          diffArea.textContent = '変更なし';
+        }
+
+        document.getElementById('comparisonArea').classList.remove('hidden');
+        generateSurveyAnswers(currentFare, newFare, diff);
+      } else {
+        document.getElementById('beforeAmount').textContent = '未入力';
+        document.getElementById('comparisonArea').classList.remove('hidden');
+        document.getElementById('surveyArea').classList.add('hidden');
+      }
+    }
+
+    function generateSurveyAnswers(before, after, diff) {
+      const transport = document.getElementById('transportType').value;
+      const from = fromInput.value.trim();
+
+      let changeAnswer;
+      if (diff > 0) changeAnswer = 'はい（値上げが発生する）';
+      else if (diff < 0) changeAnswer = 'はい（値下げが発生する）';
+      else changeAnswer = 'いいえ（変更なし）';
+
+      const fareText = diff !== 0
+        ? `変更前：${formatFare(before)}　変更後：${formatFare(after)}`
+        : '';
+
+      // 経路テキスト
+      const to = document.getElementById('toStation').value;
+      let routeText = `${from}駅 → ${to}駅`;
+      if (selectedRoute.stations && selectedRoute.stations.length > 0) {
+        routeText = selectedRoute.stations.join(' → ');
+      }
+      if (selectedRoute.lines && selectedRoute.lines.length > 0) {
+        routeText += `（${selectedRoute.lines.join('・')}）`;
+      }
+
+      const answers = [
+        { q: '通勤手段', a: transport === 'other' ? 'その他（備考欄に記入）' : transport },
+        { q: '定期代の変更有無', a: changeAnswer },
+      ];
+
+      if (diff !== 0) {
+        answers.push({ q: '変更前・変更後の金額', a: fareText });
+        // 経路に含まれる改定日を特定
+        const revisionDate = getRevisionDate(selectedRoute);
+        answers.push({ q: '運賃の改定日', a: revisionDate });
+      }
+
+      answers.push({ q: '通勤経路', a: routeText });
+
+      const container = document.getElementById('surveyAnswers');
+      container.innerHTML = answers.map(a => `
+        <div class="answer-item">
+          <div class="q">${a.q}</div>
+          <div class="a">${a.a}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('surveyArea').classList.remove('hidden');
+    }
+
+    // 経路に含まれる最新の改定日を取得
+    function getRevisionDate(route) {
+      const lines = route.lines || [];
+      const dates = [];
+      lines.forEach(line => {
+        const companyKey = detectCompany(line);
+        if (companyKey && revisionDB[companyKey]) {
+          revisionDB[companyKey].revisions.forEach(rev => {
+            if (rev.date.includes('2026')) dates.push('2026/03/14');
+            else if (rev.date.includes('2025年4月')) dates.push('2025/04/01');
+            else if (rev.date.includes('2023年10月')) dates.push('2023/10/01');
+            else if (rev.date.includes('2023年3月')) dates.push('2023/03/18');
+          });
+        }
+      });
+      // 最新の改定日を返す
+      if (dates.includes('2026/03/14')) return '2026/03/14';
+      if (dates.includes('2025/04/01')) return '2025/04/01';
+      if (dates.includes('2023/10/01')) return '2023/10/01';
+      if (dates.includes('2023/03/18')) return '2023/03/18';
+      return '確認中';
+    }
+
+    function copyAnswers() {
+      const items = document.querySelectorAll('#surveyAnswers .answer-item');
+      const text = Array.from(items).map(item => {
+        const q = item.querySelector('.q').textContent;
+        const a = item.querySelector('.a').textContent;
+        return `${q}: ${a}`;
+      }).join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.copy-all-btn');
+        btn.textContent = 'コピーしました!';
+        setTimeout(() => btn.textContent = '回答をクリップボードにコピー', 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "commute-fare-checker",
+  "version": "1.0.0",
+  "description": "2026年運賃改定 通勤定期代変更チェッカー",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0",
+    "express": "^4.21.0"
+  }
+}
